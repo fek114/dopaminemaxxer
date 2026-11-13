@@ -3,7 +3,14 @@ import { MediaController } from "@/lib/controller";
 import { settings, siteSettings, withDefaults, type Settings } from "@/lib/settings";
 
 export type MeterMessage =
-  | { state: "active"; volumeDb: number; thresholdDb: number; silent: boolean }
+  | {
+      state: "active";
+      volumeDb: number;
+      thresholdDb: number;
+      silent: boolean;
+      /** Quiet audio, but a subtitle on screen is holding normal speed */
+      subtitle: boolean;
+    }
   | { state: "cors" | "drm" };
 
 const METER_INTERVAL_MS = 33;

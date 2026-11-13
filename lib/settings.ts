@@ -13,6 +13,11 @@ export interface Settings {
    * (see LOOKAHEAD_S in detector.ts)
    */
   lookahead: boolean;
+  /**
+   * Keep normal speed while a subtitle/caption is on screen, even if the
+   * audio is quiet (see lib/subtitles.ts)
+   */
+  followSubtitles: boolean;
   /** Auto-derive the threshold from the media's noise floor */
   dynamicThreshold: boolean;
   /** Threshold in dBFS, used when dynamicThreshold is off (and as warm-up fallback) */
@@ -25,6 +30,7 @@ export const DEFAULT_SETTINGS: Settings = {
   silenceSpeed: 3,
   muteSilence: true,
   lookahead: true,
+  followSubtitles: true,
   dynamicThreshold: true,
   manualThresholdDb: -40,
 };

@@ -35,6 +35,10 @@ counts what it saves you.
   podcast players, university lecture portals, plain `<video>`/`<audio>` pages.
 - **Two speeds, your choice** — set a speed for speech (e.g. 1×) and one for
   silence (e.g. 3×). Skip Silence switches between them automatically.
+- **Follows subtitles** — when a subtitle or caption is on screen, playback
+  returns to normal speed even if the audio is quiet, so whispered or soft
+  dialogue isn't fast-forwarded. Works with native `<track>` subtitles and
+  common player overlays (YouTube, video.js, JW Player, Plyr, Vimeo, …).
 - **Silence stays silent** — optionally mute the leftover hiss and keyboard
   noise while fast-forwarding through quiet parts.
 - **Smooth transitions** — a small audio lookahead lets Skip Silence unmute at

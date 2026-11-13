@@ -1,6 +1,12 @@
 import { LOOKAHEAD_S, SilenceDetector, type VolumeSample } from "./detector";
 import { timeSavedMs, type Settings } from "./settings";
 import { createRateSetter } from "./speed";
+import { SubtitleWatcher } from "./subtitles";
+
+export interface ControllerSample extends VolumeSample {
+  /** A subtitle is on screen and kept playback at normal speed. */
+  subtitle: boolean;
+}
 
 // Silence must hold this long before we speed up — short enough to catch real
 // pauses, long enough that brief dips don't cause rapid skip/unskip flapping.
@@ -24,9 +30,10 @@ const FLUSH_EVERY_MS = 5000; // persist time saved every ~5s
  * on the AudioContext clock to land exactly when speech reaches the ears.
  */
 export class MediaController {
-  lastSample: VolumeSample | undefined;
+  lastSample: ControllerSample | undefined;
 
   #detector: SilenceDetector;
+  #subtitles: SubtitleWatcher;
   #setRate: (rate: number) => void;
   #getSettings: () => Settings;
 
@@ -39,6 +46,7 @@ export class MediaController {
     this.#getSettings = getSettings;
     this.#setRate = createRateSetter(el);
     this.#detector = new SilenceDetector(el, getSettings);
+    this.#subtitles = new SubtitleWatcher(el);
     this.#detector.onSample = (sample) => this.#onSample(sample);
   }
 
@@ -73,12 +81,17 @@ export class MediaController {
   }
 
   #onSample(sample: VolumeSample) {
-    this.lastSample = sample;
     const cfg = this.#getSettings();
+    // A subtitle on screen means someone is talking even if the audio is
+    // quiet — treat it as speech so playback returns to normal speed.
+    const subtitle =
+      sample.silent && cfg.followSubtitles && this.#subtitles.isActive();
+    const silent = sample.silent && !subtitle;
+    this.lastSample = { ...sample, silent, subtitle };
     const windowMs = this.#detector.windowMs;
     this.#sinceFlushMs += windowMs;
 
-    if (sample.silent) {
+    if (silent) {
       const prevSilentMs = this.#silentMs;
       this.#silentMs += windowMs;
       if (this.#silentMs >= HOLD_MS) {

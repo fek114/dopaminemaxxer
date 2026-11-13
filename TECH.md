@@ -22,6 +22,7 @@ no offscreen document, and no page-world script injection.
   48kHz) from the audio thread, so detection is immune to background-tab timer
   throttling.
 - `lib/detector.ts` — per-element audio graph and threshold logic.
+- `lib/subtitles.ts` — detects on-screen subtitles/captions per element.
 - `lib/controller.ts` — per-element playback policy (when to speed up, mute,
   and restore).
 - `lib/speed.ts` — sets `playbackRate` and defends it against sites (YouTube)
@@ -58,6 +59,14 @@ MediaElementSource → VolumeProcessor (worklet) → DelayNode → GainNode → 
 - Silence must hold **500ms** before speeding up (prevents rapid skip/unskip
   flapping), then the rate ramps linearly to the silence speed over ~200ms.
 - On sound, the rate snaps back immediately — anything else eats speech.
+- **Follow subtitles** (`lib/subtitles.ts`): a silent sample counts as speech
+  while a subtitle is on screen. Sources: active cues of enabled
+  (`showing`/`hidden`) subtitle/caption `textTracks`, plus visible, non-empty
+  caption overlays of common players (YouTube `.ytp-caption-segment`,
+  video.js, JW Player, Plyr, Vimeo, Shaka, …) searched within up to 6
+  ancestors of the media element. Checked at most every 100ms; the player
+  container is cached. When the subtitle disappears the normal 500ms hold
+  applies before speeding up again.
 - Muting uses gain ramps (`setTargetAtTime`, 15ms mute / 40ms unmute time
   constants) to avoid clicks.
 - **Lookahead** ("Smooth transitions"): the 60ms output delay sits well under
