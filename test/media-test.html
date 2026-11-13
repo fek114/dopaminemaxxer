@@ -8,6 +8,9 @@
   - During the 440Hz tone: "rate" stays at the configured playback speed.
   - During silence: after ~250ms the rate ramps up to the silence speed
     (and audio mutes if "Mute during silence" is on).
+  - With "Follow subtitles" on: the silence gaps at 7–10s and 22–25s carry a
+    subtitle cue, so the rate stays at playback speed there and the popup
+    badge reads "Subtitles". Other gaps still skip.
   - The popup meter shows lime bars for tone, gray for silence.
 -->
 <html lang="en">
@@ -23,7 +26,8 @@
     <h1>Skip Silence test</h1>
     <p>Alternating 2s of 440Hz tone and 3s of silence, 60s total.</p>
     <button id="start">Generate &amp; play</button>
-    <audio id="player" controls></audio>
+    <video id="player" controls width="480" height="120"></video>
+    <div id="cue">cue: –</div>
     <div id="rate">rate: –</div>
 
     <script>
@@ -56,10 +60,17 @@
       const player = document.getElementById('player');
       document.getElementById('start').onclick = () => {
         player.src = URL.createObjectURL(makeWav());
+        // Subtitles during two of the silent gaps (quiet "speech")
+        const track = player.addTextTrack('subtitles', 'Test', 'en');
+        track.mode = 'showing';
+        track.addCue(new VTTCue(7, 10, 'A quiet line during silence'));
+        track.addCue(new VTTCue(22, 25, 'Another whispered line'));
         player.play();
       };
       setInterval(() => {
         document.getElementById('rate').textContent = `rate: ${player.playbackRate.toFixed(2)}×`;
+        const cue = player.textTracks[0]?.activeCues?.[0];
+        document.getElementById('cue').textContent = `cue: ${cue ? cue.text : '–'}`;
       }, 100);
     </script>
   </body>

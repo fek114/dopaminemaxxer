@@ -208,6 +208,13 @@ export default function App() {
               onChange={(lookahead) => commit({ lookahead })}
             />
             <SettingRow
+              id="follow-subtitles"
+              label="Follow subtitles"
+              description="Plays at speech speed while subtitles are on screen"
+              checked={cfg.followSubtitles}
+              onChange={(followSubtitles) => commit({ followSubtitles })}
+            />
+            <SettingRow
               id="dynamic-threshold"
               label="Auto threshold"
               description="Adapts to each video's noise floor"

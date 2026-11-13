@@ -31,6 +31,7 @@ export function VolumeMeter({ enabled }: { enabled: boolean }) {
   const frameRef = useRef<Frame>({ bars: [], thresholdDb: -40, lastSampleAt: 0 });
   const [status, setStatus] = useState<Status>('no-media');
   const [skipping, setSkipping] = useState(false);
+  const [subtitle, setSubtitle] = useState(false);
 
   useEffect(() => {
     let port: ReturnType<typeof browser.tabs.connect> | undefined;
@@ -47,6 +48,7 @@ export function VolumeMeter({ enabled }: { enabled: boolean }) {
           if (message.state === 'active') {
             setStatus('active');
             setSkipping(message.silent);
+            setSubtitle(message.subtitle);
             frame.bars.push({ db: message.volumeDb, silent: message.silent });
             if (frame.bars.length > BAR_COUNT) frame.bars.shift();
             frame.thresholdDb = message.thresholdDb;
@@ -62,6 +64,7 @@ export function VolumeMeter({ enabled }: { enabled: boolean }) {
       if (performance.now() - frameRef.current.lastSampleAt > NO_SIGNAL_TIMEOUT_MS) {
         setStatus('no-media');
         setSkipping(false);
+        setSubtitle(false);
         frameRef.current.bars = [];
       }
     }, NO_SIGNAL_TIMEOUT_MS);
@@ -150,7 +153,7 @@ export function VolumeMeter({ enabled }: { enabled: boolean }) {
               : 'border border-zinc-200 bg-white/85 text-zinc-500 backdrop-blur-sm')
           }
         >
-          {skipping ? 'Skipping' : 'Playing'}
+          {skipping ? 'Skipping' : subtitle ? 'Subtitles' : 'Playing'}
         </span>
       )}
       {overlay && (
